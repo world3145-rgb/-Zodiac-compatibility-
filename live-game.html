@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生命牌卡遊戲</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #4c1d95 0%, #7c3aed 50%, #a78bfa 100%);
+            padding: 2rem;
+            overflow-x: hidden;
+        }
+
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .back-btn {
+            position: absolute;
+            left: 0;
+            top: 0;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 0.5rem 1.5rem;
+            border-radius: 2rem;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+            font-weight: 600;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateX(-5px);
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            color: white;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.2rem;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .game-section {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .instruction {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .instruction h2 {
+            color: #5b21b6;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .instruction p {
+            color: #4c1d95;
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+
+        .draw-btn {
+            background: linear-gradient(135deg, #ec4899, #8b5cf6);
+            color: white;
+            border: none;
+            padding: 1.5rem 3rem;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border-radius: 3rem;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.4);
+            transition: all 0.3s;
+            margin-bottom: 2rem;
+        }
+
+        .draw-btn:hover:not(:disabled) {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(139, 92, 246, 0.6);
+        }
+
+        .draw-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .cards-container {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+            perspective: 1000px;
+        }
+
+        .card {
+            width: 150px;
+            height: 220px;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+        }
+
+        .card-inner {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.8s;
+        }
+
+        .card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-front,
+        .card-back {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            backface-visibility: hidden;
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, #7c3aed, #a78bfa);
+            color: white;
+            font-size: 3rem;
+        }
+
+        .card-back {
+            background: white;
+            transform: rotateY(180deg);
+            flex-direction: column;
+            padding: 1rem;
+        }
+
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-name {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #5b21b6;
+            text-align: center;
+        }
+
+        .result-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 1.5rem;
+            padding: 2.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.8s ease-in;
+            display: none;
+        }
+
+        .result-section.show {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .result-icon {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .result-title {
+            font-size: 2.5rem;
+            color: #5b21b6;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-subtitle {
+            font-size: 1.2rem;
+            color: #7c3aed;
+        }
+
+        .result-content {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .result-content h3 {
+            color: #92400e;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .result-content p {
+            color: #78350f;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            text-align: justify;
+        }
+
+        .result-advice {
+            background: linear-gradient(135deg, #ddd6fe 0%, #c4b5fd 100%);
+            border-radius: 1rem;
+            padding: 2rem;
+        }
+
+        .result-advice h3 {
+            color: #5b21b6;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .result-advice p {
+            color: #6b21a8;
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+
+        .reset-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 2rem;
+            cursor: pointer;
+            margin-top: 1.5rem;
+            transition: all 0.3s;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .reset-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+                margin-top: 3rem;
+            }
+
+            .back-btn {
+                position: static;
+                display: inline-block;
+                margin-bottom: 1rem;
+            }
+
+            .card {
+                width: 120px;
+                height: 180px;
+            }
+
+            .card-icon {
+                font-size: 2.5rem;
+            }
+
+            .card-name {
+                font-size: 0.9rem;
+            }
+
+            .result-title {
+                font-size: 2rem;
+            }
+
+            .draw-btn {
+                padding: 1rem 2rem;
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+
+    <div class="container">
+        <div class="header">
+            <a href="index.html" class="back-btn">← 返回首頁</a>
+            <h1>
+                <span>🔮</span>
+                生命牌卡遊戲
+                <span>✨</span>
+            </h1>
+            <p class="subtitle">抽取屬於你的神秘牌卡，探索生命中的指引與啟示</p>
+        </div>
+
+        <div class="game-section">
+            <div class="instruction">
+                <h2>🌟 如何進行</h2>
+                <p>靜下心來，想著你目前最想獲得指引的問題<br>
+                點擊「抽取牌卡」按鈕，然後選擇一張最吸引你的牌卡<br>
+                這張牌將為你帶來此刻最需要的訊息</p>
+            </div>
+
+            <button id="drawBtn" class="draw-btn">🎴 抽取牌卡</button>
+
+            <div id="cardsContainer" class="cards-container"></div>
+        </div>
+
+        <div id="resultSection" class="result-section">
+            <div class="result-header">
+                <div class="result-icon" id="resultIcon"></div>
+                <h2 class="result-title" id="resultTitle"></h2>
+                <p class="result-subtitle" id="resultSubtitle"></p>
+            </div>
+
+            <div class="result-content">
+                <h3>💫 牌卡訊息</h3>
+                <p id="resultMessage"></p>
+            </div>
+
+            <div class="result-advice">
+                <h3>🌈 生活建議</h3>
+                <p id="resultAdvice"></p>
+            </div>
+
+            <button id="resetBtn" class="reset-btn">🔄 重新抽取</button>
+        </div>
+    </div>
+
+    <script>
+        const cards = [
+            {
+                icon: '🌟',
+                name: '星星',
+                subtitle: '希望與夢想',
+                message: '星星牌代表著希望、夢想和靈性指引。此刻的你正處於一個充滿可能性的時期，宇宙正在為你指引方向。保持信念，你的夢想正在逐步實現。即使在黑暗中，星光依然閃耀，為你照亮前行的道路。',
+                advice: '相信自己的直覺，追隨內心的聲音。現在是設定新目標、展望未來的好時機。保持樂觀和希望，宇宙會支持你的夢想。'
+            },
+            {
+                icon: '🌙',
+                name: '月亮',
+                subtitle: '直覺與潛意識',
+                message: '月亮牌象徵著直覺、潛意識和內在的情感世界。你可能正面對一些不確定性，但這正是探索內心深處的好時機。信任你的直覺，它會引導你找到答案。有些事物需要時間才能清晰，耐心等待真相浮現。',
+                advice: '花時間獨處，聆聽內在的聲音。記錄你的夢境和直覺感受。不要急於做出決定，讓事情自然發展。冥想和反思會對你有幫助。'
+            },
+            {
+                icon: '☀️',
+                name: '太陽',
+                subtitle: '成功與喜悅',
+                message: '太陽牌是最積極正面的牌卡之一，代表著成功、喜悅和豐盛。你正處於人生的光明時期，一切都在向好的方向發展。你的努力即將獲得回報，快樂和滿足感充滿你的生活。盡情享受這段美好時光，讓你的光芒照耀他人。',
+                advice: '慶祝你的成就，與他人分享你的喜悅。保持積極樂觀的態度，你的正能量會吸引更多好運。現在是展現才華、追求目標的最佳時機。'
+            },
+            {
+                icon: '💎',
+                name: '寶石',
+                subtitle: '內在價值',
+                message: '寶石牌提醒你認識到自己的內在價值。你就像一顆珍貴的寶石，經過時間的磨練而更加璀璨。不要讓外界的評價定義你的價值，你本身就是完整而珍貴的。現在是發掘和展現你獨特天賦的時候。',
+                advice: '培養自信和自愛，認可自己的優點和成就。投資在自我成長上，無論是學習新技能還是培養興趣愛好。記住，你的價值不需要他人的認可。'
+            },
+            {
+                icon: '🌸',
+                name: '花朵',
+                subtitle: '成長與綻放',
+                message: '花朵牌象徵著成長、綻放和生命的美好。就像花朵需要時間才能盛開，你也正在自己的時間表上成長。每一個經歷都在滋養你，讓你變得更加美麗和堅強。相信成長的過程，你正在成為最好的自己。',
+                advice: '給自己時間和空間去成長。照顧好自己的身心健康，就像照料一株植物。接受生命中的各個階段，每個時期都有其獨特的美。'
+            },
+            {
+                icon: '🦋',
+                name: '蝴蝶',
+                subtitle: '轉變與重生',
+                message: '蝴蝶牌代表著轉變、蛻變和重生。你可能正經歷人生的重大轉變，雖然過程可能不易，但這是通往更美好自己的必經之路。就像毛毛蟲變成蝴蝶，你也正在經歷美麗的蛻變。擁抱變化，相信新的開始。',
+                advice: '勇敢地放下不再服務你的舊模式。擁抱改變，即使它讓你感到不安。記住，轉變後的你會更加自由和美麗。給自己時間適應新的生活方式。'
+            },
+            {
+                icon: '🌊',
+                name: '海洋',
+                subtitle: '情感與流動',
+                message: '海洋牌象徵著情感的深度和生命的流動。就像海洋有潮起潮落，人生也有高低起伏。學會隨波逐流，不要抗拒生命的自然節奏。你的情感是豐富而深刻的，接納它們，讓它們自然流動。',
+                advice: '允許自己感受各種情緒，不要壓抑。學會順應生活的變化，而不是試圖控制一切。花時間親近水邊，讓大自然療癒你的心靈。'
+            },
+            {
+                icon: '🔥',
+                name: '火焰',
+                subtitle: '熱情與力量',
+                message: '火焰牌代表著熱情、活力和內在的力量。你擁有強大的創造力和行動力，現在是燃燒你的熱情、追求目標的時候。不要害怕展現你的力量，讓你的熱情點燃生命。你有能力克服任何障礙。',
+                advice: '追隨你的熱情，做你真正熱愛的事情。不要壓抑你的能量，找到健康的方式表達它。設定大膽的目標，勇敢地追求它們。保持動力，但也要注意不要燃燒殆盡。'
+            },
+            {
+                icon: '🌳',
+                name: '大樹',
+                subtitle: '根基與成長',
+                message: '大樹牌象徵著穩固的根基和持續的成長。你正在建立堅實的基礎，這將支持你未來的發展。就像大樹需要深深的根才能長得高大，你也需要打好基礎。耐心和堅持會帶來豐碩的果實。',
+                advice: '投資在長期目標上，不要急於求成。培養良好的習慣和穩定的生活方式。與家人和朋友建立深厚的連結。保持耐心，相信時間會證明一切。'
+            },
+            {
+                icon: '🎨',
+                name: '畫筆',
+                subtitle: '創造與表達',
+                message: '畫筆牌鼓勵你發揮創造力，自由表達自己。生命就像一幅畫布，你是唯一的藝術家。不要害怕嘗試新的可能，用你獨特的方式為生命添加色彩。你的創造力是無限的，盡情揮灑。',
+                advice: '探索你的創意天賦，無論是藝術、寫作還是任何形式的創造。不要在意他人的評價，自由地表達自己。嘗試新事物，讓生活充滿創意和樂趣。'
+            },
+            {
+                icon: '🕊️',
+                name: '白鴿',
+                subtitle: '和平與自由',
+                message: '白鴿牌代表著和平、自由和靈性的提升。現在是放下過去、尋求內心平靜的時候。原諒他人，也原諒自己，讓心靈獲得真正的自由。和平始於內心，當你內在平靜時，外在世界也會和諧。',
+                advice: '練習寬恕，放下怨恨和負面情緒。尋找內心的平靜，可以通過冥想、瑜伽或親近大自然。給自己自由，不要被過去束縛。保持心靈的純淨和開放。'
+            },
+            {
+                icon: '⚡',
+                name: '閃電',
+                subtitle: '突破與啟示',
+                message: '閃電牌象徵著突然的覺醒、啟示和重大突破。你可能會經歷一個"啊哈時刻"，突然明白了一直困擾你的問題。雖然變化來得突然，但它會帶來必要的清理和重建。準備好迎接新的開始。',
+                advice: '保持開放的心態，準備接受新的觀點和理解。不要抗拒突如其來的變化，它們往往帶來重要的成長。信任宇宙的安排，即使當下看不清方向。記錄下你的靈感和頓悟。'
+            }
+        ];
+
+        const drawBtn = document.getElementById('drawBtn');
+        const cardsContainer = document.getElementById('cardsContainer');
+        const resultSection = document.getElementById('resultSection');
+        const resetBtn = document.getElementById('resetBtn');
+        const starsContainer = document.getElementById('stars');
+
+        // 創建星星背景
+        for (let i = 0; i < 100; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.animationDelay = Math.random() * 3 + 's';
+            starsContainer.appendChild(star);
+        }
+
+        drawBtn.addEventListener('click', showCards);
+        resetBtn.addEventListener('click', resetGame);
+
+        function showCards() {
+            drawBtn.disabled = true;
+            cardsContainer.innerHTML = '';
+            
+            // 隨機選擇5張牌
+            const shuffled = [...cards].sort(() => Math.random() - 0.5);
+            const selectedCards = shuffled.slice(0, 5);
+
+            selectedCards.forEach((card, index) => {
+                const cardElement = document.createElement('div');
+                cardElement.className = 'card';
+                cardElement.style.animationDelay = `${index * 0.1}s`;
+                cardElement.innerHTML = `
+                    <div class="card-inner">
+                        <div class="card-front">
+                            🎴
+                        </div>
+                        <div class="card-back">
+                            <div class="card-icon">${card.icon}</div>
+                            <div class="card-name">${card.name}</div>
+                        </div>
+                    </div>
+                `;
+                
+                cardElement.addEventListener('click', () => selectCard(card, cardElement));
+                cardsContainer.appendChild(cardElement);
+            });
+        }
+
+        function selectCard(card, cardElement) {
+            // 翻開選中的牌
+            cardElement.classList.add('flipped');
+            
+            // 禁用所有牌的點擊
+            document.querySelectorAll('.card').forEach(c => {
+                c.style.pointerEvents = 'none';
+            });
+
+            // 延遲顯示結果
+            setTimeout(() => {
+                showResult(card);
+            }, 1000);
+        }
+
+        function showResult(card) {
+            document.getElementById('resultIcon').textContent = card.icon;
+            document.getElementById('resultTitle').textContent = card.name;
+            document.getElementById('resultSubtitle').textContent = card.subtitle;
+            document.getElementById('resultMessage').textContent = card.message;
+            document.getElementById('resultAdvice').textContent = card.advice;
+            
+            resultSection.classList.add('show');
+            resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function resetGame() {
+            cardsContainer.innerHTML = '';
+            resultSection.classList.remove('show');
+            drawBtn.disabled = false;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
