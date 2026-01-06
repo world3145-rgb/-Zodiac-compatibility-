@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>星座配對遊戲</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 40px;
+            font-size: 2.5em;
+        }
+
+        .selection-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .zodiac-box {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .zodiac-box label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            font-size: 1em;
+            cursor: pointer;
+            background: white;
+            transition: all 0.3s;
+        }
+
+        select:hover {
+            border-color: #764ba2;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #764ba2;
+            box-shadow: 0 0 10px rgba(118, 75, 162, 0.3);
+        }
+
+        .heart-icon {
+            font-size: 2.5em;
+            color: #ff6b6b;
+            animation: heartbeat 1.5s ease-in-out infinite;
+            text-align: center;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        .match-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.3em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-bottom: 30px;
+        }
+
+        .match-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .match-btn:active {
+            transform: translateY(0);
+        }
+
+        #result {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        #result.show {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .zodiac-display {
+            font-size: 4em;
+            margin: 20px 0;
+        }
+
+        .match-title {
+            font-size: 1.8em;
+            color: #667eea;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .score-section {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .score-number {
+            font-size: 4em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .score-90 {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .score-75 {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .score-60 {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .score-low {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .score-emoji {
+            font-size: 2em;
+            margin: 10px 0;
+        }
+
+        .match-level {
+            font-size: 1.5em;
+            color: #764ba2;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #f0f0f0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b 0%, #feca57 50%, #48dbfb 100%);
+            border-radius: 15px;
+            transition: width 1s ease-out;
+            width: 0%;
+        }
+
+        .description-box {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            line-height: 1.8;
+            color: #333;
+            text-align: left;
+            font-size: 1.05em;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .selection-area {
+                flex-direction: column;
+            }
+
+            .heart-icon {
+                order: 3;
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✨ 星座配對遊戲 ✨</h1>
+        
+        <div class="selection-area">
+            <div class="zodiac-box">
+                <label for="sign1">選擇第一個星座</label>
+                <select id="sign1">
+                    <option value="">請選擇...</option>
+                    <option value="白羊座">♈ 白羊座</option>
+                    <option value="金牛座">♉ 金牛座</option>
+                    <option value="雙子座">♊ 雙子座</option>
+                    <option value="巨蟹座">♋ 巨蟹座</option>
+                    <option value="獅子座">♌ 獅子座</option>
+                    <option value="處女座">♍ 處女座</option>
+                    <option value="天秤座">♎ 天秤座</option>
+                    <option value="天蠍座">♏ 天蠍座</option>
+                    <option value="射手座">♐ 射手座</option>
+                    <option value="摩羯座">♑ 摩羯座</option>
+                    <option value="水瓶座">♒ 水瓶座</option>
+                    <option value="雙魚座">♓ 雙魚座</option>
+                </select>
+            </div>
+            
+            <div class="heart-icon">❤️</div>
+            
+            <div class="zodiac-box">
+                <label for="sign2">選擇第二個星座</label>
+                <select id="sign2">
+                    <option value="">請選擇...</option>
+                    <option value="白羊座">♈ 白羊座</option>
+                    <option value="金牛座">♉ 金牛座</option>
+                    <option value="雙子座">♊ 雙子座</option>
+                    <option value="巨蟹座">♋ 巨蟹座</option>
+                    <option value="獅子座">♌ 獅子座</option>
+                    <option value="處女座">♍ 處女座</option>
+                    <option value="天秤座">♎ 天秤座</option>
+                    <option value="天蠍座">♏ 天蠍座</option>
+                    <option value="射手座">♐ 射手座</option>
+                    <option value="摩羯座">♑ 摩羯座</option>
+                    <option value="水瓶座">♒ 水瓶座</option>
+                    <option value="雙魚座">♓ 雙魚座</option>
+                </select>
+            </div>
+        </div>
+
+        <button class="match-btn" id="matchBtn">💫 開始配對 💫</button>
+
+        <div id="result">
+            <div class="result-header">
+                <div class="zodiac-display">
+                    <span id="zodiacEmoji1"></span> + <span id="zodiacEmoji2"></span>
+                </div>
+                <div class="match-title" id="matchTitle"></div>
+            </div>
+
+            <div class="score-section">
+                <div class="score-number" id="scoreNumber">0分</div>
+                <div class="score-emoji" id="scoreEmoji"></div>
+                <div class="match-level" id="matchLevel"></div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+
+            <div class="description-box" id="description"></div>
+        </div>
+    </div>
+
+    <script>
+        const zodiacs = {
+            '白羊座': '♈', '金牛座': '♉', '雙子座': '♊',
+            '巨蟹座': '♋', '獅子座': '♌', '處女座': '♍',
+            '天秤座': '♎', '天蠍座': '♏', '射手座': '♐',
+            '摩羯座': '♑', '水瓶座': '♒', '雙魚座': '♓'
+        };
+
+        const matchData = {
+            '白羊座-白羊座': { score: 75, desc: '兩個火花碰撞,充滿激情但也容易爭執。與白羊座相處，關鍵是尊重他們的獨立與自由，給予足夠的空間，同時保持自信、熱情與積極，用真誠的讚美和支持來溝通，避免冷戰和過度控制，多參與他們感興趣的活動，他們喜歡新鮮感和一起冒險，懂得欣賞他們的直接與活力，並學會溝通衝突，就能與他們建立一段充滿活力和信任的關係。' },
+            '白羊座-金牛座': { score: 60, desc: '一個衝動一個穩重,需要互相理解。白羊座和金牛座相處關鍵在於互補與磨合，白羊的熱情活力能帶動慢熱的金牛，金牛的踏實穩定能給衝動的白羊安全感，但最大的挑戰是節奏不同，白羊需學習耐心與傾聽，控制衝動；金牛需學會表達、放鬆，並給予白羊足夠的空間，共同目標與有效溝通是長久關係的基石。' },
+            '白羊座-雙子座': { score: 85, desc: '充滿活力的組合,永遠不會無聊。雙子座的靈活與好奇心使牡羊座感到刺激與挑戰。雙方都喜歡變化和互動，讓這段感情充滿活力。' },
+            '白羊座-巨蟹座': { score: 55, desc: '個性差異大,需要更多耐心。巨蟹和牡羊相處，顯然是處於被動的一方，牡羊在個性、主導性方面都要比巨蟹強。在跟牡羊相處時，巨蟹切記不要鬧情緒，這隻會讓牡羊跑得更快。不如對牡羊保持尊重和呵護的態度，拿出對孩子的相處方式與之相處更適合。' },
+            '白羊座-獅子座': { score: 95, desc: '火象星座的完美配對,充滿熱情。這對組合充滿激情，彼此吸引，能夠快速進展，並且在性格上有很多相似之處，適合成為伴侶。獅子座與牡羊座皆為火象星座，彼此充滿熱情且有共同目標。兩者之間的默契來自於對生活的熱愛，感情中充滿激情。' },
+            '白羊座-處女座': { score: 50, desc: '一個大膽一個謹慎,挑戰較大。白羊座（火象）和處女座（土象）相處，關鍵在於理解和欣賞彼此的互補性：白羊的熱情衝動與處女的細膩理性形成強烈對比，初期相互吸引，但長期需克服白羊的隨性、處女的挑剔，學習白羊的果斷，也讓處女感受被重視，尊重對方節奏，才能將火與土的能量結合，實現夢想。' },
+            '白羊座-天秤座': { score: 70, desc: '互補的關係,能激發彼此潛力。白羊座（火象）與天秤座（風象）是對宮星座，性格互補但易有衝突，白羊的衝動直接 vs. 天秤的理性平衡，相處關鍵在於欣賞彼此差異、學習溝通：白羊給天秤決斷力與熱情，天秤給白羊圓融與同理心；白羊需多聽意見、尊重公平；天秤需給予空間、鼓勵白羊。' },
+            '白羊座-天蠍座': { score: 65, desc: '強烈的吸引力,但需要學會妥協。牡羊座直率坦誠，情緒表現在臉上毫不保留；天蠍座則擅長隱藏情感、間接表達。兩人在日常相處中，往往因溝通方式的巨大差異而產生劇烈碰撞。牡羊座欣賞天蠍座的神祕和堅定，天蠍座則無法抗拒牡羊座的坦率與衝勁。' },
+            '白羊座-射手座': { score: 90, desc: '絕配!冒險精神相投。射手座的自由心態與牡羊座的冒險精神相得益彰，雙方對於新鮮事物的熱愛使這段關係充滿驚喜與趣味。' },
+            '白羊座-摩羯座': { score: 55, desc: '目標導向不同,需要磨合。摩羯座注重計劃與長期穩定，而牡羊座則更加隨性且追求當下快感，兩者節奏不一致，容易產生誤解。' },
+            '白羊座-水瓶座': { score: 80, desc: '創新思維碰撞,充滿驚喜。牡羊和水瓶是孩子性格，所以更多時候都是空想家，水瓶有天馬行空想法，但牡羊會更瘋，會衝著水瓶的想法去實現。' },
+            '白羊座-雙魚座': { score: 60, desc: '一個現實一個夢幻,需要平衡。牡羊座遇上雙魚座就像小孩遇上老人。雙魚座的人喜歡活在自己的白日夢境中，而且雙魚座是最後一個箱子，有著十二星座的綜合情緒，敏感但被動。' },
+            '金牛座-金牛座': { score: 80, desc: '穩定又踏實,生活和諧美滿。金牛座與金牛座相處，關鍵在於建立深度溝通、享受共同務實生活與適度妥協，兩人都重視穩定與安全感，所以透過美食、藝術、理財規劃等共同興趣加深連結。' },
+            '金牛座-雙子座': { score: 55, desc: '節奏不同,需要更多溝通。金牛座的穩重與雙子座的多變相衝突，雙子座會覺得金牛座過於沉悶，而金牛座則認為雙子座太不穩定。' },
+            '金牛座-巨蟹座': { score: 90, desc: '溫馨的組合,重視家庭與安全感。巨蟹座的溫柔與情感穩定感，能夠滿足金牛座對於安全感的需求，彼此的感情溫暖且持久。' },
+            '金牛座-獅子座': { score: 60, desc: '都很固執,需要學會讓步。金牛座和獅子座相處的關鍵在於互補與尊重差異，金牛的穩重踏實能給予獅子安全感，獅子的熱情與領導力能帶動金牛嘗試新事物。' },
+            '金牛座-處女座': { score: 95, desc: '土象星座完美配對,務實可靠。這對組合在感情上非常忠誠，彼此能夠相互理解，金牛的穩重和處女的細心使得這段關係穩定而持久。處女座與金牛座同屬土象星座，兩者都注重實際與穩定的生活。' },
+            '金牛座-天秤座': { score: 75, desc: '都愛美好事物,審美相近。金牛座與天秤座都重視美感與生活品質，但金牛務實、天秤重和諧與社交，相處關鍵在於互相欣賞優點、尊重差異。' },
+            '金牛座-天蠍座': { score: 70, desc: '強烈的吸引力,但都很固執。金牛座與天蠍座是天生一對，吸引力強，都重視忠誠與穩定，金牛的踏實能給天蠍安全感，天蠍的熱情能助金牛敞開心扉。' },
+            '金牛座-射手座': { score: 50, desc: '價值觀差異大,挑戰性高。射手座的自由精神與金牛座的固執形成強烈對比，射手座的變動性讓金牛座難以適應。' },
+            '金牛座-摩羯座': { score: 92, desc: '超級穩定的組合,目標一致。摩羯座的務實與計劃性格與金牛座相輔相成，兩人對於長期穩定的關係有著一致的追求，是非常和諧的一對。' },
+            '金牛座-水瓶座': { score: 55, desc: '傳統與創新的碰撞。水瓶座的創新思維與非傳統性，讓重視傳統與穩定的金牛座感到難以理解，雙方在生活方式上差異過大。' },
+            '金牛座-雙魚座': { score: 85, desc: '浪漫又溫柔的組合。金牛座和雙魚座的相處，是務實與浪漫的互補組合，金牛的穩定安全感能安撫雙魚的敏感多愁，雙魚的溫柔詩意則能為金牛的生活增添情趣。' },
+            '雙子座-雙子座': { score: 80, desc: '聊不完的話題,永遠新鮮。要和雙子座相處，關鍵在於尊重他們的獨立與自由，提供新鮮感與多元話題，保持開放、幽默且機智的溝通。' },
+            '雙子座-巨蟹座': { score: 60, desc: '理性與感性的碰撞。巨蟹座和雙子座相處需要溝通和平衡，巨蟹的感性、需要安全感與雙子的理性、喜愛自由形成反差。' },
+            '雙子座-獅子座': { score: 85, desc: '社交達人的組合,光彩奪目。獅子座和雙子座都是很大喇喇、直來直往的星座，靈活彈性的雙子座能完美應對獅子座的霸氣和任性。' },
+            '雙子座-處女座': { score: 65, desc: '都很聰明,但關注點不同。雙子座和處女座同屬水星守護，溝通是關鍵，話題不斷，雙子愛自由變動，處女求穩定細緻。' },
+            '雙子座-天秤座': { score: 95, desc: '風象星座絕配,溝通無障礙。這對組合在社交和溝通上非常合拍，能夠共同享受生活中的樂趣。' },
+            '雙子座-天蠍座': { score: 55, desc: '深度與廣度的差異。雙子座和天蠍座相處是火花與挑戰並存的組合，關鍵在於理解和溝通。' },
+            '雙子座-射手座': { score: 88, desc: '愛自由的靈魂,充滿冒險。雙子座與射手座之間的感情如同一場無休止的辯論賽。雙子座善於溝通與分享，射手座則喜歡發表獨到見解。' },
+            '雙子座-摩羯座': { score: 50, desc: '輕鬆與嚴肅的對比。雙子座（風象）和摩羯座（土象）的相處，關鍵在於理解與包容「動與靜」、「自由與責任」的差異。' },
+            '雙子座-水瓶座': { score: 92, desc: '思想交流的最佳拍檔。雙子座與水瓶座是天造地設的絕配，相處關鍵在於尊重彼此的自由、重視精神交流、享受新鮮感。' },
+            '雙子座-雙魚座': { score: 70, desc: '多變的組合,充滿想像。雙子座和雙魚座相處，關鍵在於雙子座的理性與雙魚座的感性如何取得平衡。' },
+            '巨蟹座-巨蟹座': { score: 85, desc: '互相理解,溫暖的避風港。巨蟹座和巨蟹座相處，關鍵在於共同營造安全感、重視家庭、真誠溝通。' },
+            '巨蟹座-獅子座': { score: 65, desc: '需要學會互相欣賞。巨蟹座和獅子座相處的關鍵在於互補與包容，巨蟹的溫柔細膩能安撫獅子外顯的自信，獅子的熱情則能鼓勵巨蟹。' },
+            '巨蟹座-處女座': { score: 88, desc: '細心體貼的組合,相處融洽。處女座的細心和條理，能給予渴望安全感的巨蟹座穩定感。巨蟹座的溫暖和體貼，能安撫處女座容易多慮和緊張的特質。' },
+            '巨蟹座-天秤座': { score: 60, desc: '情感表達方式不同。巨蟹座和雙子座相處需要溝通和平衡，巨蟹的感性、需要安全感與雙子的理性、喜愛自由形成反差。' },
+            '巨蟹座-天蠍座': { score: 95, desc: '水象星座靈魂伴侶,深度連結。這對組合情感深厚，能夠彼此支持，建立強烈的情感連結。' },
+            '巨蟹座-射手座': { score: 55, desc: '一個戀家一個愛自由。巨蟹座（重情感、顧家）和射手座（愛自由、樂觀）相處，關鍵在於平衡依賴與自由。' },
+            '巨蟹座-摩羯座': { score: 75, desc: '互補的組合,穩定踏實。巨蟹座和摩羯座是對宮星座，雖對立但互補，相處關鍵在於理解差異、相互支持。' },
+            '巨蟹座-水瓶座': { score: 50, desc: '情感與理智的拉扯。巨蟹座（感性、顧家、需要安全感）和水瓶座（理性、獨立、愛自由）相處，關鍵在溝通理解、給予空間。' },
+            '巨蟹座-雙魚座': { score: 92, desc: '夢幻又浪漫,心靈相通。巨蟹座和雙魚座同屬水象星座，天生就是靈魂伴侶，相處關鍵在於情感共鳴與深度理解。' },
+            '獅子座-獅子座': { score: 70, desc: '兩個王者,需要分享舞台。兩個獅子座相處，關鍵在於互相給予足夠的讚美、尊重對方的主導權與空間。' },
+            '獅子座-處女座': { score: 60, desc: '表現慾與低調的對比。獅子座的熱情、遠見與自信能帶給處女座活力與安全感，而處女座的細緻、務實與條理能幫助獅子座將夢想落地。' },
+            '獅子座-天秤座': { score: 85, desc: '優雅又自信的組合。獅子座與天秤座是互補性強的組合，獅子的果斷自信能給予天秤安全感，天秤的溫和優雅則能安撫獅子。' },
+            '獅子座-天蠍座': { score: 65, desc: '權力鬥爭需要化解。獅子座和天蠍座相處，是火與水的激情碰撞，關鍵在於尊重彼此的強勢與獨立。' },
+            '獅子座-射手座': { score: 93, desc: '火象星座的熱情碰撞。獅子座和射手
